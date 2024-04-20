@@ -1,0 +1,3 @@
+class WrongQuarterNumberException extends FormatException {
+
+}

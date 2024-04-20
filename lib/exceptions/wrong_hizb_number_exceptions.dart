@@ -1,0 +1,3 @@
+class WrongHizbNumberException extends FormatException {
+
+}
