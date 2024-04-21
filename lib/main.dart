@@ -1,4 +1,6 @@
+import 'package:efficientmuraja3a/ui/select_quarters/select_quarters_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'model/quarter.dart';
 
@@ -12,13 +14,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (context) => SelectQuartersViewModel(),
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const SelectQuarterPage(title: 'Select you\'re known quarters'),
       ),
-      home: const SelectQuarterPage(title: 'Select you\'re known quarters'),
     );
   }
 }
@@ -43,20 +48,6 @@ class SelectQuarterPage extends StatefulWidget {
 
 class _SelectQuarterPageState extends State<SelectQuarterPage> {
 
-  Set<Quarter> listSelectedQuarter = {};
-
-  void _addQuarter(int hizb, int quarterNb) {
-    Quarter quarter = Quarter(hizb: hizb, quarter: quarterNb);
-    if (listSelectedQuarter.contains(quarter)) return;
-    listSelectedQuarter.add(quarter);
-  }
-
-  void _removeQuarter(int hizb, int quarterNb) {
-    Quarter quarter = Quarter(hizb: hizb, quarter: quarterNb);
-    if (!listSelectedQuarter.contains(quarter)) return;
-    listSelectedQuarter.remove(quarter);
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -75,28 +66,30 @@ class _SelectQuarterPageState extends State<SelectQuarterPage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4, // 4 columns
-            ),
-            itemCount: 60*4,
-            itemBuilder: (BuildContext context, int index) {
-              // Calculate hizb and quarter
-              int hizb = 60 - index ~/ 4;
-              int quarter = index % 4 + 1;
+      body: Consumer<SelectQuartersViewModel>(
+        builder: (context, viewModel, child) {
+          return Center(
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4, // 4 columns
+                ),
+                itemCount: viewModel.quarters.length,
+                itemBuilder: (BuildContext context, int index) {
+                  Quarter quarter = viewModel.quarters[index];
 
-              // Return QuarterCard widget
-              return QuarterCard(hizb: hizb, quarter: quarter, onChanged: (isSelected){
-                if (isSelected) {
-                  _addQuarter(hizb, quarter);
-                } else {
-                  _removeQuarter(hizb, quarter);
-                }
-              },
-              );
-            },
-        )
+                  // Return QuarterCard widget
+                  return QuarterCard(hizb: quarter.hizb, quarter: quarter.quarter, isSelected: quarter.isSelected, onChanged: (isSelected){
+                    if (isSelected) {
+                      viewModel.addQuarter(quarter.hizb, quarter.quarter);
+                    } else {
+                      viewModel.removeQuarter(quarter.hizb, quarter.quarter);
+                    }
+                  },
+                  );
+                },
+              )
+          );
+        }
       ),
     );
   }
@@ -105,12 +98,13 @@ class _SelectQuarterPageState extends State<SelectQuarterPage> {
 class QuarterCard extends StatefulWidget {
   final int hizb;
   final int quarter;
+  final bool isSelected;
   final ValueChanged<bool>? onChanged;
 
-  QuarterCard({Key? key, required this.hizb, required this.quarter, this.onChanged}) : super(key: key);
+  QuarterCard({Key? key, required this.hizb, required this.quarter, required this.isSelected, this.onChanged}) : super(key: key);
 
   @override
-  _QuarterCardState createState() => _QuarterCardState(hizb: hizb, quarter: quarter);
+  _QuarterCardState createState() => _QuarterCardState(hizb: hizb, quarter: quarter, isSelected: isSelected);
 }
 
 
@@ -121,6 +115,11 @@ class _QuarterCardState extends State<QuarterCard> {
   bool isSelected = false;
 
   Color _cardColor = Colors.white;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   _QuarterCardState({required this.hizb, required int quarter, this.isSelected = false}) {
     switch(quarter) {
@@ -142,6 +141,7 @@ class _QuarterCardState extends State<QuarterCard> {
     }
 
     isSelected = isSelected;
+    _cardColor = isSelected ? Colors.green: Colors.white;
   }
 
   void _onClick() {
