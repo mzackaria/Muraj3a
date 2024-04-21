@@ -120,6 +120,8 @@ class _QuarterCardState extends State<QuarterCard> {
   String quarter = 'unknown';
   bool isSelected = false;
 
+  Color _cardColor = Colors.white;
+
   _QuarterCardState({required this.hizb, required int quarter, this.isSelected = false}) {
     switch(quarter) {
       case 1:
@@ -138,15 +140,14 @@ class _QuarterCardState extends State<QuarterCard> {
         this.quarter = "unknown";
         break;
     }
-  }
 
-  Color _cardColor = Colors.white;
+    isSelected = isSelected;
+  }
 
   void _onClick() {
     setState(() {
       isSelected = !isSelected;
       _cardColor = isSelected ? Colors.green: Colors.white;
-
       if (widget.onChanged != null) {
         widget.onChanged!(isSelected); // Notify parent widget
       }

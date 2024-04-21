@@ -10,8 +10,8 @@ class Quarter {
   int id = 0;
 
   Quarter({required this.hizb, required this.quarter}) {
-    if (hizb >= 1 && hizb <= 60) throw WrongHizbNumberException;
-    if (quarter >= 0 && quarter <= 4) throw WrongQuarterNumberException;
+    if (hizb < 1 && hizb > 60) throw WrongHizbNumberException;
+    if (quarter < 0 && quarter > 4) throw WrongQuarterNumberException;
     id = quarter * hizb;
   }
 
